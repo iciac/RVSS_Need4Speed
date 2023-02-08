@@ -23,18 +23,13 @@ class Trainer():
         self.criterion = nn.NLLLoss()
         
         
-        transforms = nn.Sequential(
-                transforms.CenterCrop(10),
+        self.data_transforms = transforms.Compose([
+                transforms.Resize((48, 64)),
                 transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-                transforms.greyscale(),
-                #transforms.functionaladjustbrightness()
-                )
-        
-        
-        
-        
+                transforms.ToTensor(),
+                ])
 
-    def train(self, epochs):
+    def train_one_epoch(self, epochs):
         for epoch in tqdm(range(epochs)):
             running_loss = 0.0
 
@@ -101,3 +96,32 @@ class Trainer():
 
         print('Finished Training')
         torch.save(self.MLP.state_dict(), 'modelweights.pt')
+
+
+if __name__ == '__main__':
+    # TODO: arguments here
+    epochs = 
+    
+    # TODO: define the dataloader
+    trainloader = 
+    
+    
+    # TODO: start training
+    for epoch in tqdm(range(epochs)):
+            running_loss = 0.0
+
+            # TODO: run the train_one_epoch function
+            # Simply for time keeping
+            start_time = time.time()
+            # Loop over all training data
+            for i, data in enumerate(trainloader, 0):
+                # get the inputs; data is a list of [inputs, labels]
+                inputs, labels = data
+                
+                
+            # TODO: do validation
+            if epoch % 5 == 0:
+                validate()
+                
+                
+            
