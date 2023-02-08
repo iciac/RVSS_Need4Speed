@@ -21,6 +21,7 @@ camera = ppi.VideoStreamWidget('http://localhost:8080/camera/get')
 mlp = MLPNet()
 
 #LOAD NETWORK WEIGHTS HERE
+mlp.load_state_dict(' PUT WEIGHT FILE HERE ')
 
 #countdown before beginning
 print("Get ready...")
@@ -42,8 +43,12 @@ try:
         #TO DO: apply any image transformations
         
         
+        
+        
 
         #TO DO: pass image through network to get a prediction for the steering angle
+        
+        angle = mlp(image)
         
         angle = np.clip(angle, -0.5, 0.5)
         Kd = 30 #base wheel speeds, increase to go faster, decrease to go slower

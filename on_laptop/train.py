@@ -21,6 +21,18 @@ class Trainer():
         self.MLP = MLPNet(width=self.width, hidden=self.hidden)
         self.optim = optim.Adam(params=self.MLP.parameters())
         self.criterion = nn.NLLLoss()
+        
+        
+        transforms = nn.Sequential(
+                transforms.CenterCrop(10),
+                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+                transforms.greyscale(),
+                #transforms.functionaladjustbrightness()
+                )
+        
+        
+        
+        
 
     def train(self, epochs):
         for epoch in tqdm(range(epochs)):
@@ -88,3 +100,4 @@ class Trainer():
                   epoch+1, 'epochs is', 100*correct/total)
 
         print('Finished Training')
+        torch.save(self.MLP.state_dict(), 'modelweights.pt')
