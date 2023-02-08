@@ -9,6 +9,7 @@ import numpy as np
 import penguinPi as ppi
 import torch
 import torch.nn as nn
+from MLP import MLPNet
 
 # stop the robot 
 ppi.set_velocity(0,0)
@@ -16,6 +17,8 @@ print("initialise camera")
 camera = ppi.VideoStreamWidget('http://localhost:8080/camera/get')
 
 #INITIALISE NETWORK HERE
+
+mlp = MLPNet()
 
 #LOAD NETWORK WEIGHTS HERE
 
@@ -37,6 +40,8 @@ try:
         image = camera.frame
 
         #TO DO: apply any image transformations
+        
+        
 
         #TO DO: pass image through network to get a prediction for the steering angle
         
