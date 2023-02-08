@@ -53,18 +53,18 @@ try:
                     ppi.set_velocity(0,0)
                     raise KeyboardInterrupt
         
-        # get an image from the robot
+        # get an image from the the robot
         image = camera.frame
         
         angle = np.clip(angle, -0.5, 0.5)
-        Kd = 30 #30 #base wheel speeds, increase to go faster, decrease to go slower
-        Ka = 30 #how fast to turn when given an angle
+        Kd = 30 # 30 #base wheel speeds, increase to go faster, decrease to go slower
+        Ka = 30 #30 #how fast to turn when given an angle
         left  = int(Kd + (Ka+10)*angle)
         right = int(Kd - Ka*angle)
         
         ppi.set_velocity(left,right) 
-        #if im_number % 10 == 0:
-        cv2.imwrite("data/"+str(im_number).zfill(6)+'%.2f'%angle+".jpg", image) 
+
+        # cv2.imwrite("data/"+str(im_number).zfill(6)+'%.2f'%angle+".jpg", image) 
         im_number += 1
         
         

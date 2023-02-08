@@ -2,8 +2,6 @@ import penguinPi as ppi
 import time
 
 if __name__ == "__main__":
-    enc_begin_left, enc_begin_right = ppi.get_encoders()
-    print("get encoders state at beginning:", enc_begin_left, enc_begin_right)
     print("test left motor")
     ppi.set_velocity(10,0)
     time.sleep(2)
@@ -12,9 +10,6 @@ if __name__ == "__main__":
     time.sleep(2)
     print("stop")
     ppi.set_velocity(0,0)
-    print("get encoders state at beginning")
-    enc_end_left, enc_end_right = ppi.get_encoders()
-    print("get encoders state at end:", enc_end_left, enc_end_right)
 
     print("initialise camera")
     camera = ppi.VideoStreamWidget('http://localhost:8080/camera/get')
@@ -22,10 +17,10 @@ if __name__ == "__main__":
     print("grab image")
     image = camera.frame
     print("image size %d by %d" % (image.shape[0],image.shape[1]))
-    try:
+    try:    
         while True:
-            image = camera.show_frame()
+            image = camera.show_frame() #press q to exit
     except KeyboardInterrupt:
-        exit()
-
-
+        ppi.set_velocity(0,0)
+        
+ 
