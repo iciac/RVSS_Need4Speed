@@ -136,12 +136,12 @@ if __name__ == '__main__':
     
     # ANCHOR: transform functions
     transform = transforms.Compose(
-    [CropData(args.im_crop_xmin, args.im_crop_ymin, args.im_crop_width, args.im_crop_height),
-    transforms.Resize(size=(48, 64)),
-    transforms.ColorJitter(brightness=0.5),
-    AddGaussianNoise(0., 0.04),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    transforms.ToTensor(),
+    [transforms.ToTensor(),
+     CropData(args.im_crop_xmin, args.im_crop_ymin, args.im_crop_width, args.im_crop_height),
+     transforms.Resize(size=(48, 64)),
+     transforms.ColorJitter(brightness=0.5),
+     AddGaussianNoise(0., 0.04),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
      ])
     ds_train = SteerDataSet('../on_robot/collect_data/archive', ".jpg", transform, mode='train', trial_file_name='./data/ds_train.txt')
     ds_eval = SteerDataSet('../on_robot/collect_data/archive', ".jpg", transform, mode='eval', trial_file_name='./data/ds_train.txt')
