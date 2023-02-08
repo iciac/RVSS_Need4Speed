@@ -1,4 +1,5 @@
 
+import argparse
 from tqdm import tqdm
 from MLP import MLPNet
 import numpy as np
@@ -10,7 +11,43 @@ from torchvision import datasets, transforms, utils
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.nn as nn
+from model import PenguinNet
 FLAG_GPU = True
+
+
+def options(argv=None):
+    parser = argparse.ArgumentParser(description='PointNet-LK')
+
+    # io settings.
+    parser.add_argument('--outfile', type=str, default='./logs/2021_04_17_train_modelnet',
+                        metavar='BASENAME', help='output filename (prefix)')
+    parser.add_argument('--dataset_path', type=str, default='../on_robot/collect_data/archive',
+                        metavar='PATH', help='path to the input dataset')
+    parser.add_argument('--workers', default=12, type=int,
+                        metavar='N', help='number of data loading workers')
+
+    # settings for Embedding
+    parser.add_argument('--embedding', default='vgg',
+                        type=str, help='embedding functions to choose')
+    parser.add_argument('--dim_k', default=64, type=int,
+                        metavar='K', help='dim. of the feature vector')
+
+    # settings for training.
+    parser.add_argument('--batch_size', default=4, type=int,
+                        metavar='N', help='mini-batch size')
+    parser.add_argument('--max_epochs', default=200, type=int,
+                        metavar='N', help='number of total epochs to run')
+    parser.add_argument('--optimizer', default='Adam', type=str,
+                        metavar='METHOD', help='name of an optimizer')
+    parser.add_argument('--device', default='cuda:0', type=str,
+                        metavar='DEVICE', help='use CUDA if available')
+    parser.add_argument('--lr', type=float, default=1e-3,
+                        metavar='D', help='learning rate')
+    parser.add_argument('--decay_rate', type=float, default=1e-4, 
+                        metavar='D', help='decay rate of learning rate')
+
+    args = parser.parse_args(argv)
+    return args
 
 
 class Trainer():
@@ -100,7 +137,29 @@ class Trainer():
 
 if __name__ == '__main__':
     # TODO: arguments here
-    epochs = 
+    args = options()
+    
+    trainset, evalset = get_datasets(args)
+    trainer = Trainer()
+    
+    model = PenguinNet(args.embedding, args.dim_k, )
+    model.to(args.device)
+
+    checkpoint = None
+    if args.resume:
+        assert os.path.isfile(args.resume)
+        checkpoint = torch.load(args.resume)
+        args.start_epoch = checkpoint['epoch']
+        model.load_state_dict(checkpoint['model'])
+    print('resume epoch from {}'.format(args.start_epoch+1))
+
+    evalloader = torch.utils.data.DataLoader(evalset,
+        batch_size=args.batch_size, shuffle=False, num_workers=args.workers, drop_last=True)
+    trainloader = torch.utils.data.DataLoader(trainset,
+        batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=True)
+
+    min_loss = float('inf')
+    min_info = float('inf')
     
     # TODO: define the dataloader
     trainloader = 
