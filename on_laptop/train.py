@@ -12,7 +12,7 @@ from torchvision import transforms, models
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.nn as nn
-from model import PenguinNet, SimpleNet
+from model import PenguinNet, SimpleNet, MiddleNet
 from steerDS import SteerDataSet, AddGaussianNoise, CropData
 
 
@@ -69,7 +69,7 @@ class Trainer():
             inputs = data['image']
             labels = data['steering']
             
-            print(inputs.shape)
+            # print(inputs.shape)
             
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
@@ -184,6 +184,8 @@ if __name__ == '__main__':
         model = PenguinNet(args.embedding, args.hidden, args.width).to(args.device)
     elif args.embedding == 'simple':
         model = SimpleNet()
+    elif args.embedding == 'middle':
+        model = MiddleNet()
     # optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
     
     # model = PenguinNet(args.embedding, args.hidden_layers, args.dim_k)
