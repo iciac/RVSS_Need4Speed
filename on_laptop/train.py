@@ -7,8 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import datasets, transforms, utils
+from torch.utils.data import DataLoader
+from torchvision import transforms, models
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.nn as nn
@@ -55,34 +55,30 @@ class Trainer():
         self.width = args.dim_k
         self.hidden = args.hidden_layers
 
-        if args.embedding == 'cnn':
-            self.model = PenguinNet(args.embedding, self.hidden, self.width).to(args.device)
-        self.optim = optim.Adam(params=self.model.parameters())
-        self.criterion = nn.NLLLoss()
-
     # FIXME: need to see if the detail is correct
-    def train_one_epoch(self, epoch, trainloader):
+    def train_one_epoch(self, epoch, trainloader, optimizer, model, criterion):
         running_loss = .0
         train_loss = .0
         
         # Loop over all training data
         for i, data in enumerate(trainloader):
             # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data
+            inputs = data['image']
+            labels = data['steering']
             inputs.to(self.device)
             labels.to(self.device)
 
             # zero the parameter gradients
-            self.optim.zero_grad()
+            optimizer.zero_grad()
 
             # forward
-            outputs = self.model(inputs)
-            loss = self.criterion(outputs, labels)
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
 
             # Compute Gradients
             loss.backward()
             # BackProp
-            self.optim.step()
+            optimizer.step()
 
             # get statistics
             train_loss = train_loss + loss.item()
@@ -98,19 +94,20 @@ class Trainer():
 
     # TODO: evaluation, should be similar to training
     # FIXME: wrong details/code
-    def eval_one_epoch(self, epoch, evalloader):
+    def eval_one_epoch(self, epoch, evalloader, model, criterion):
         total_num = 0
         correct = 0
         eval_loss = .0
         
         for i, data in enumerate(evalloader):
-            inputs, labels = data
+            inputs = data['image']
+            labels = data['steering']
             inputs.to(self.device)
             labels.to(self.device)
 
             with torch.no_grad():
-                outputs = self.model(inputs)
-                loss = self.criterion(outputs, labels)
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
                 
                 # FIXME: here
                 # note here we take the max of all probability
@@ -147,26 +144,46 @@ if __name__ == '__main__':
     ds_eval = SteerDataSet('../on_robot/collect_data/archive', ".jpg", transform, mode='eval', trial_file_name='./data/ds_train.txt')
 
     trainer = Trainer(args)
+        
+    # FIXME: use pretrained model to test first and finetuning
+    # model = models.vgg11(pretrained=True)
+    model = models.vgg11(pretrained=False)
+    # torch.save(model.state_dict(), './pretrained_models/vgg11.pth')
+    model.load_state_dict(torch.load('./pretrained_models/vgg11.pth'))
+    # model = models.resnet50(pretrained=True)
+    print(model)
+    # print(jjj)
+    num_ftrs = model.classifier[0].in_features
     
-    model = PenguinNet(args.embedding, args.hidden_layers, args.dim_k)
+    model.classifier = nn.Sequential(nn.Linear(num_ftrs, 512),
+                                 nn.ReLU(),
+                                 nn.Linear(512, 11),
+                                 nn.LogSoftmax(dim=1))
+    # if args.embedding == 'cnn':
+    #     model = PenguinNet(args.embedding, args.hidden, args.width).to(args.device)
+    optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
+    
+    # model = PenguinNet(args.embedding, args.hidden_layers, args.dim_k)
+    # optimizer = optim.Adam(params=model.parameters())
+    criterion = nn.NLLLoss()
     model.to(args.device)
 
     ds_trainloader = DataLoader(ds_train, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=True)
     ds_evalloader = DataLoader(ds_eval, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, drop_last=True)
 
-    # FIXME: test dataloader
-    for S in ds_trainloader:
-        im = S["image"]    
-        y  = S["steering"]
+    # # FIXME: test dataloader
+    # for S in ds_trainloader:
+    #     im = S["image"]    
+    #     y  = S["steering"]
         
-        print(im.shape)
-        print(im.max(),im.min())
+    #     print(im.shape)
+    #     print(im.max(),im.min())
 
-        plt.imshow(im.detach().squeeze().permute(1,2,0).cpu().numpy())
+    #     plt.imshow(im.detach().squeeze().permute(1,2,0).cpu().numpy())
 
-        plt.show()
-        print(y)
-        break
+    #     plt.show()
+    #     print(y)
+    #     break
     
     min_loss = float('inf')
     
@@ -177,7 +194,7 @@ if __name__ == '__main__':
         # Simply for time keeping
         start_time = time.time()
         
-        avg_train_loss = trainer.train_one_epoch(epoch, ds_trainloader)
+        avg_train_loss = trainer.train_one_epoch(epoch, ds_trainloader, optimizer, model, criterion)
         print('Epoch', epoch+1, 'average training loss us {}'.format(avg_train_loss))
         
         # end for over minibatches epoch finishes
@@ -185,7 +202,7 @@ if __name__ == '__main__':
         
         # TODO: validate the network every epoch on eval examples
         if epoch % 5 == 0:
-            avg_eval_loss, total_num, correct = trainer.eval_one_epoch(epoch, ds_evalloader)
+            avg_eval_loss, total_num, correct = trainer.eval_one_epoch(epoch, ds_evalloader, model, criterion)
             
         print('Epoch', epoch+1, 'took', end_time-start_time, 'seconds')
         print('Accuracy of the network after', epoch+1, 'epochs is', 100*correct/total_num)
