@@ -12,7 +12,7 @@ from torchvision import transforms, models
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.nn as nn
-from model import PenguinNet
+from model import PenguinNet, SimpleNet
 from steerDS import SteerDataSet, AddGaussianNoise, CropData
 
 
@@ -145,26 +145,29 @@ if __name__ == '__main__':
 
     trainer = Trainer(args)
         
-    # FIXME: use pretrained model to test first and finetuning
-    # model = models.vgg11(pretrained=True)
-    model = models.vgg11(pretrained=False)
-    # torch.save(model.state_dict(), './pretrained_models/vgg11.pth')
-    model.load_state_dict(torch.load('./pretrained_models/vgg11.pth'))
-    # model = models.resnet50(pretrained=True)
-    print(model)
-    # print(jjj)
-    num_ftrs = model.classifier[0].in_features
+    # # FIXME: use pretrained model to test first and finetuning
+    # # model = models.vgg11(pretrained=True)
+    # model = models.vgg11(pretrained=False)
+    # # torch.save(model.state_dict(), './pretrained_models/vgg11.pth')
+    # model.load_state_dict(torch.load('./pretrained_models/vgg11.pth'))
+    # # model = models.resnet50(pretrained=True)
+    # print(model)
+    # # print(jjj)
+    # num_ftrs = model.classifier[0].in_features
     
-    model.classifier = nn.Sequential(nn.Linear(num_ftrs, 512),
-                                 nn.ReLU(),
-                                 nn.Linear(512, 11),
-                                 nn.LogSoftmax(dim=1))
-    # if args.embedding == 'cnn':
-    #     model = PenguinNet(args.embedding, args.hidden, args.width).to(args.device)
-    optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
+    # model.classifier = nn.Sequential(nn.Linear(num_ftrs, 512),
+    #                              nn.ReLU(),
+    #                              nn.Linear(512, 11),
+    #                              nn.LogSoftmax(dim=1))
+    
+    if args.embedding == 'cnn':
+        model = PenguinNet(args.embedding, args.hidden, args.width).to(args.device)
+    elif args.embdding == 'simple':
+        model = SimpleNet()
+    # optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
     
     # model = PenguinNet(args.embedding, args.hidden_layers, args.dim_k)
-    # optimizer = optim.Adam(params=model.parameters())
+    optimizer = optim.Adam(params=model.parameters())
     criterion = nn.NLLLoss()
     model.to(args.device)
 
