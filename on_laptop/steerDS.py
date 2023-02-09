@@ -64,6 +64,7 @@ class SteerDataSet(Dataset):
             self.filenames = [self.filenames[index] for index in fi_idx]
             
         self.totensor = transforms.ToTensor()
+        self.label_class = torch.arange(-0.5, 0.6, 0.1)
         
     def __len__(self):        
         return len(self.filenames)
@@ -79,7 +80,11 @@ class SteerDataSet(Dataset):
         
         steering = f.split("/")[-1].split(self.img_ext)[0][6:]
         steering = np.float32(steering)        
-    
+
+        # TODO: make label data to be a class lable
+        steering = torch.where(abs(steering - self.label_class) < 1e-4)[0]
+        # print('steering lable is {}'.format(steering))
+        
         sample = {"image":img , "steering":steering}        
         
         return sample

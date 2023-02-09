@@ -63,21 +63,29 @@ class Trainer():
         # Loop over all training data
         for i, data in enumerate(trainloader):
         # for i in range(len(trainloader)):
-            print('dealing with batch {}'.format(i))
+            # print('dealing with batch {}'.format(i))
             
             # get the inputs; data is a list of [inputs, labels]
             inputs = data['image']
             labels = data['steering']
             inputs.to(self.device)
             labels.to(self.device)
+            # labels = torch.cat(labels)
+            labels = labels.squeeze()
 
             # zero the parameter gradients
             optimizer.zero_grad()
 
             # forward
             outputs = model(inputs)
-            print(outputs)
-            print(labels)
+            # print(outputs)
+            # print(labels)
+            # print('jjj')
+            
+            # outputs_argmax = torch.argmax(outputs, dim=1)
+            # print(outputs_argmax)
+            # print(labels)
+            # print('jjj')
             
             loss = criterion(outputs, labels)
 
@@ -91,7 +99,7 @@ class Trainer():
             running_loss = running_loss + loss.item()
             
             if i % 100 == 99:    # print every 100 mini-batches
-                print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, train_loss / 100))
+                print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 100))
                 running_loss = .0
         
         avg_train_loss = train_loss / i
@@ -110,6 +118,8 @@ class Trainer():
             labels = data['steering']
             inputs.to(self.device)
             labels.to(self.device)
+            
+            labels = labels.squeeze()
 
             with torch.no_grad():
                 outputs = model(inputs)
@@ -173,7 +183,7 @@ if __name__ == '__main__':
     # optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
     
     # model = PenguinNet(args.embedding, args.hidden_layers, args.dim_k)
-    optimizer = optim.Adam(params=model.parameters())
+    optimizer = optim.SGD(lr=args.lr, params=model.parameters())
     criterion = nn.NLLLoss()
     model.to(args.device)
 
