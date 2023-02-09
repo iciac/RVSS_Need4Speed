@@ -146,7 +146,7 @@ if __name__ == '__main__':
     ds_train = SteerDataSet('../on_robot/collect_data/archive', ".jpg", transform, mode='train', trial_file_name='./data/ds_train.txt')
     ds_eval = SteerDataSet('../on_robot/collect_data/archive', ".jpg", transform, mode='eval', trial_file_name='./data/ds_train.txt')
 
-    trainer = Trainer()
+    trainer = Trainer(args)
     
     model = PenguinNet(args.embedding, args.hidden_layers, args.dim_k)
     model.to(args.device)
@@ -154,6 +154,20 @@ if __name__ == '__main__':
     ds_trainloader = DataLoader(ds_train, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=True)
     ds_evalloader = DataLoader(ds_eval, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, drop_last=True)
 
+    # FIXME: test dataloader
+    for S in ds_trainloader:
+        im = S["image"]    
+        y  = S["steering"]
+        
+        print(im.shape)
+        print(im.max(),im.min())
+
+        plt.imshow(im.detach().squeeze().permute(1,2,0).cpu().numpy())
+
+        plt.show()
+        print(y)
+        break
+    
     min_loss = float('inf')
     
     # TODO: start training
@@ -163,7 +177,8 @@ if __name__ == '__main__':
         # Simply for time keeping
         start_time = time.time()
         
-        trainer.train_one_epoch(epoch, ds_trainloader)
+        avg_train_loss = trainer.train_one_epoch(epoch, ds_trainloader)
+        print('Epoch', epoch+1, 'average training loss us {}'.format(avg_train_loss))
         
         # end for over minibatches epoch finishes
         end_time = time.time()
@@ -176,7 +191,7 @@ if __name__ == '__main__':
         print('Accuracy of the network after', epoch+1, 'epochs is', 100*correct/total_num)
 
     print('Finished Training')
-    torch.save(self.model.state_dict(), 'modelweights.pt')
+    torch.save(model.state_dict(), 'modelweights.pt')
     
                 
             

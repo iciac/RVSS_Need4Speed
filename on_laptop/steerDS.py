@@ -61,7 +61,7 @@ class SteerDataSet(Dataset):
             elif mode == 'eval':
                 data_len = int(len(self.filenames) * 0.2)
             fi_idx = np.random.choice(len(self.filenames), data_len, replace=False)
-            self.filenames = self.filenames[fi_idx]
+            self.filenames = [self.filenames[index] for index in fi_idx]
             
         self.totensor = transforms.ToTensor()
         
