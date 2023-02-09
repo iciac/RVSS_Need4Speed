@@ -20,7 +20,7 @@ def options(argv=None):
     parser = argparse.ArgumentParser(description='PointNet-LK')
 
     # io settings.
-    parser.add_argument('--outfile', type=str, default='./logs/2021_04_17_train_modelnet', help='output filename (prefix)')
+    parser.add_argument('--outfile', type=str, default='./checkpoints/2023_02_09_SimpleNet.pth', help='output filename (prefix)')
     parser.add_argument('--dataset_path', type=str, default='../on_robot/collect_data/archive', help='path to the input dataset')
     parser.add_argument('--workers', default=6, type=int, help='number of data loading workers')
     
@@ -68,9 +68,10 @@ class Trainer():
             # get the inputs; data is a list of [inputs, labels]
             inputs = data['image']
             labels = data['steering']
-            inputs.to(self.device)
-            labels.to(self.device)
-            # labels = torch.cat(labels)
+            
+            inputs = inputs.to(self.device)
+            labels = labels.to(self.device)
+            
             labels = labels.squeeze()
 
             # zero the parameter gradients
@@ -116,8 +117,9 @@ class Trainer():
         for i, data in enumerate(evalloader):
             inputs = data['image']
             labels = data['steering']
-            inputs.to(self.device)
-            labels.to(self.device)
+            
+            inputs = inputs.to(self.device)
+            labels = labels.to(self.device)
             
             labels = labels.squeeze()
 
@@ -183,7 +185,10 @@ if __name__ == '__main__':
     # optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
     
     # model = PenguinNet(args.embedding, args.hidden_layers, args.dim_k)
-    optimizer = optim.SGD(lr=args.lr, params=model.parameters())
+    if args.optimizer == 'sgd':
+        optimizer = optim.SGD(lr=args.lr, params=model.parameters())
+    elif args.optimizer == 'adam':
+        optimizer = optim.Adam(lr=args.lr, params=model.parameters())
     criterion = nn.NLLLoss()
     model.to(args.device)
 
@@ -227,5 +232,5 @@ if __name__ == '__main__':
         print('Accuracy of the network after', epoch+1, 'epochs is', 100*correct/total_num)
 
     print('Finished Training')
-    torch.save(model.state_dict(), 'modelweights.pt')
+    torch.save(model.state_dict(), args.outfile)
     
