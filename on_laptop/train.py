@@ -20,7 +20,7 @@ def options(argv=None):
     parser = argparse.ArgumentParser(description='PointNet-LK')
 
     # io settings.
-    parser.add_argument('--outfile', type=str, default='./checkpoints/2023_02_09_SimpleNet.pth', help='output filename (prefix)')
+    parser.add_argument('--outfile', type=str, default='./checkpoints/2023_02_09_SimpleNet.pt', help='output filename (prefix)')
     parser.add_argument('--dataset_path', type=str, default='../on_robot/collect_data/archive', help='path to the input dataset')
     parser.add_argument('--workers', default=6, type=int, help='number of data loading workers')
     
@@ -68,6 +68,8 @@ class Trainer():
             # get the inputs; data is a list of [inputs, labels]
             inputs = data['image']
             labels = data['steering']
+            
+            print(inputs.shape)
             
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
