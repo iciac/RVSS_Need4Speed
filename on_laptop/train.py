@@ -193,5 +193,3 @@ if __name__ == '__main__':
     print('Finished Training')
     torch.save(model.state_dict(), 'modelweights.pt')
     
-                
-            
