@@ -22,7 +22,7 @@ def options(argv=None):
     # io settings.
     parser.add_argument('--outfile', type=str, default='./logs/2021_04_17_train_modelnet', help='output filename (prefix)')
     parser.add_argument('--dataset_path', type=str, default='../on_robot/collect_data/archive', help='path to the input dataset')
-    parser.add_argument('--workers', default=12, type=int, help='number of data loading workers')
+    parser.add_argument('--workers', default=6, type=int, help='number of data loading workers')
     
     # data settings.
     parser.add_argument('--im_crop_xmin', default=40, type=int, help='xmin of image to crop')
@@ -62,6 +62,9 @@ class Trainer():
         
         # Loop over all training data
         for i, data in enumerate(trainloader):
+        # for i in range(len(trainloader)):
+            print('dealing with batch {}'.format(i))
+            
             # get the inputs; data is a list of [inputs, labels]
             inputs = data['image']
             labels = data['steering']
@@ -73,6 +76,9 @@ class Trainer():
 
             # forward
             outputs = model(inputs)
+            print(outputs)
+            print(labels)
+            
             loss = criterion(outputs, labels)
 
             # Compute Gradients
@@ -162,7 +168,7 @@ if __name__ == '__main__':
     
     if args.embedding == 'cnn':
         model = PenguinNet(args.embedding, args.hidden, args.width).to(args.device)
-    elif args.embdding == 'simple':
+    elif args.embedding == 'simple':
         model = SimpleNet()
     # optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
     
